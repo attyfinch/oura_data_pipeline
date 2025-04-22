@@ -1,30 +1,31 @@
 import os
-import json
 import requests
 from dotenv import load_dotenv
 
+# Load token from .env
 load_dotenv()
 token = os.getenv("OURA_TOKEN")
 
+# Oura API endpoint: Daily Readiness (you can swap for sleep, activity, etc.)
 url = "https://api.ouraring.com/v2/usercollection/daily_readiness"
+
+# Example query: last 7 days
 params = {
-    "start_date": "2025-01-01",
+    "start_date": "2025-04-14",
     "end_date": "2025-04-20"
 }
+
 headers = {
     "Authorization": f"Bearer {token}"
 }
 
 response = requests.get(url, headers=headers, params=params)
 
+# Pretty print the result
 if response.ok:
     data = response.json()
-    
-    # Save data to a file in the data directory
-    with open("data/oura_readiness_data.json", "w") as f:
-        json.dump(data, f, indent=2)
-
-    print("✅ Data saved to oura_readiness_data.json")
+    print("✅ Success! Here's what we got:")
+    print(data)
 else:
-    print("❌ Error:", response.status_code, response.text)
-
+    print("❌ Failed to fetch data:")
+    print(response.status_code, response.text)
