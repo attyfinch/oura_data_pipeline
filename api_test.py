@@ -2,6 +2,7 @@ import os
 import requests
 from dotenv import load_dotenv
 
+
 # Load token from .env
 load_dotenv()
 token = os.getenv("OURA_TOKEN")
