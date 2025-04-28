@@ -3,7 +3,7 @@ name: Daily Oura Pipeline
 on:
   schedule:
     - cron: "0 5 * * *"   # Runs every day at 5 AM UTC
-  workflow_dispatch:      # Allow manual manual trigger from GitHub UI
+  workflow_dispatch: {}     # Allow manual manual trigger from GitHub UI
 
 jobs:
   run-daily-pipeline:
