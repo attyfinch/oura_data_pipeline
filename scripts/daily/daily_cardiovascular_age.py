@@ -6,6 +6,7 @@ import duckdb
 import os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
+import pandas as pd
 
 # Load environment variables
 load_dotenv()
@@ -25,10 +26,7 @@ if __name__ == "__main__":
     print(f"Fetching cardiovascular age data for {yesterday}...")
 
     cardiovascular_age_data = get_oura_data(CARDIOVASCULAR_AGE_ENDPOINT, OURA_API_TOKEN, params)
-
-    # Save locally for testing (optional)
-    filename = f"data/cardiovascular_age_daily_{yesterday}.csv"
-    df = save_data_to_csv(cardiovascular_age_data, filename=filename)
+    df = pd.DataFrame(cardiovascular_age_data)
 
     print("Sample of the daily data:")
     print(df.head())
