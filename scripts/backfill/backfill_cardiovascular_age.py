@@ -1,4 +1,4 @@
-from config.config import CARDIOVASCULAR_AGE_ENDPOINT, OURA_API_TOKEN, DEFAULT_START_DATE, DEFAULT_END_DATE
+from config.config import CARDIOVASCULAR_AGE_ENDPOINT, OURA_API_TOKEN, DEFAULT_START_DATE
 from scripts.utils.api_utils import get_oura_data
 from scripts.utils.csv_utils import save_data_to_csv
 
@@ -15,7 +15,7 @@ MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
 # I need to update these params and remove the variables here.
 params = {
     "start_date": DEFAULT_START_DATE,
-    "end_date": DEFAULT_END_DATE
+    "end_date": "2025-01-1"
 }
 
 if __name__ == "__main__":

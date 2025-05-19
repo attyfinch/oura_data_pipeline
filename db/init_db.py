@@ -14,13 +14,17 @@ if MOTHERDUCK_TOKEN:
 else:
     conn = duckdb.connect("md:oura")
 
-# Read the table creation SQL file
-with open("db/setup/create_cardiovascular_age_table.sql", "r") as f:
-    create_table_sql = f.read()
+# List of SQL setup files to run
+sql_files = [
+    "db/setup/create_cardiovascular_age_table.sql",
+    "db/setup/create_activity_table.sql"
+]
 
-# Execute the SQL
-conn.execute(create_table_sql)
-
-print("✅ Cardiovascular Age table is set up successfully!")
+# Execute each SQL file
+for path in sql_files:
+    with open(path, "r") as f:
+        conn.execute(f.read())
+    print(f"✅ Executed: {path}")
 
 conn.close()
+print("✅ All setup complete!")

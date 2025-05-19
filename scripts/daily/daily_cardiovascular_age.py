@@ -28,7 +28,7 @@ if __name__ == "__main__":
     cardiovascular_age_data = get_oura_data(CARDIOVASCULAR_AGE_ENDPOINT, OURA_API_TOKEN, params)
     df = pd.DataFrame(cardiovascular_age_data)
 
-    print("Sample of the daily data:")
+    print("Sample of the daily cardiovascular age data:")
     print(df.head())
 
     # Connect to MotherDuck (oura DB)
@@ -43,7 +43,9 @@ if __name__ == "__main__":
     conn.execute("CREATE OR REPLACE TEMP VIEW cardio_view AS SELECT * FROM df")
     conn.execute("""
         INSERT INTO daily_cardiovascular_age (date, cardiovascular_age)
-        SELECT day AS date, vascular_age AS cardiovascular_age
+        SELECT 
+            day AS date, 
+            vascular_age AS cardiovascular_age
         FROM cardio_view
     """)
 
