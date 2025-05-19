@@ -18,8 +18,9 @@ else:
 sql_files = [
     "db/setup/create_cardiovascular_age_table.sql",
     "db/setup/create_activity_table.sql",
-    "db/setup/create_readiness_table.sql"
-]
+    "db/setup/create_readiness_table.sql",
+    "db/setup/create_resilience_table.sql"
+]   
 
 # Execute each SQL file
 for path in sql_files:
