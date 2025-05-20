@@ -5,8 +5,11 @@ from scripts.utils.csv_utils import save_data_to_csv
 import duckdb
 import os
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
 import pandas as pd
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
+pacific = ZoneInfo("America/Los_Angeles")
 
 # Load environment variables
 load_dotenv()
@@ -15,7 +18,8 @@ load_dotenv()
 MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
 
 # Set up the date for "yesterday"
-yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+now_pacific = datetime.now(pacific)
+yesterday = (now_pacific - timedelta(days=1)).date()
 
 params = {
     "start_date": yesterday,
@@ -42,11 +46,14 @@ if __name__ == "__main__":
     # Create temp view and insert into table
     conn.execute("CREATE OR REPLACE TEMP VIEW cardio_view AS SELECT * FROM df")
     conn.execute("""
-        INSERT OR IGNORE INTO daily_cardiovascular_age (date, cardiovascular_age)
-        SELECT 
-            day AS date, 
-            vascular_age AS cardiovascular_age
+        INSERT INTO daily_cardiovascular_age (date, cardiovascular_age)
+        SELECT
+            CAST(day as DATE),
+            vascular_age
         FROM cardio_view
+        WHERE CAST(day AS DATE) NOT IN (
+            SELECT date FROM daily_cardiovascular_age
+        )
     """)
 
     print("✅ Successfully loaded daily cardiovascular age data into MotherDuck!")

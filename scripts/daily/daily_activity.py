@@ -5,8 +5,11 @@ from scripts.utils.csv_utils import save_data_to_csv
 import duckdb
 import os
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
 import pandas as pd
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
+pacific = ZoneInfo("America/Los_Angeles")
 
 # Load environment variables
 load_dotenv()
@@ -14,9 +17,10 @@ load_dotenv()
 # Grab the MotherDuck token (if available)
 MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
 
-# Set up the date for "yesterday"
-today = datetime.today().date()
-yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+# Set up the date for "today" and "yesterday"
+now_pacific = datetime.now(pacific)
+today = now_pacific.date()
+yesterday = (now_pacific - timedelta(days=1)).date()
 
 params = {
     "start_date": yesterday,
@@ -24,7 +28,7 @@ params = {
 }
 
 if __name__ == "__main__":
-    print("Fetching cardiovascular age data from Oura...")
+    print("Fetching activity age data from Oura...")
     
     activity_data = get_oura_data(ACTIVITY_ENDPOINT, OURA_API_TOKEN, params)
     df = pd.DataFrame(activity_data)

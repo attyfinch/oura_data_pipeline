@@ -5,8 +5,11 @@ from scripts.utils.csv_utils import save_data_to_csv
 import duckdb
 import os
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
 import pandas as pd
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
+pacific = ZoneInfo("America/Los_Angeles")
 
 # Load environment variables
 load_dotenv()
@@ -15,7 +18,8 @@ load_dotenv()
 MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
 
 # Set up the date for "yesterday"
-yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+now_pacific = datetime.now(pacific)
+yesterday = (now_pacific - timedelta(days=1)).date()
 
 # I need to update these params and remove the variables here.
 params = {
