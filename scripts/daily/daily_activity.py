@@ -27,8 +27,7 @@ if __name__ == "__main__":
     print("Fetching cardiovascular age data from Oura...")
     
     activity_data = get_oura_data(ACTIVITY_ENDPOINT, OURA_API_TOKEN, params)
-    
-    df = save_data_to_csv(activity_data, filename="data/daily_activity.csv")
+    df = pd.DataFrame(activity_data)
 
     print("Sample of the data:")
     print(df.head())

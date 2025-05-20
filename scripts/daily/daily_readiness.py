@@ -27,8 +27,7 @@ if __name__ == "__main__":
     print("Fetching readiness data from Oura...")
     
     readiness_data = get_oura_data(READINESS_ENDPOINT, OURA_API_TOKEN, params)
-    
-    df = save_data_to_csv(readiness_data, filename="data/daily_readiness.csv")
+    df = pd.DataFrame(readiness_data)
 
     print("Sample of the data:")
     print(df.head())
