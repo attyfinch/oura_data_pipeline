@@ -44,13 +44,14 @@ if __name__ == "__main__":
 
     # Create temp view and insert into table
     conn.execute("CREATE OR REPLACE TEMP VIEW cardio_view AS SELECT * FROM df")
-    conn.execute("""
+    conn.execute(f"""
         INSERT INTO daily_cardiovascular_age (date, cardiovascular_age)
         SELECT
-            CAST(day as DATE),
+            CAST(day AS DATE),
             vascular_age
         FROM cardio_view
-        WHERE CAST(day AS DATE) NOT IN (
+        WHERE CAST(day AS DATE) = DATE '{yesterday}'
+        AND CAST(day AS DATE) NOT IN (
             SELECT date FROM daily_cardiovascular_age
         )
     """)
