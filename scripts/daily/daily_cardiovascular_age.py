@@ -42,7 +42,7 @@ if __name__ == "__main__":
     # Create temp view and insert into table
     conn.execute("CREATE OR REPLACE TEMP VIEW cardio_view AS SELECT * FROM df")
     conn.execute("""
-        INSERT INTO daily_cardiovascular_age (date, cardiovascular_age)
+        INSERT OR IGNORE INTO daily_cardiovascular_age (date, cardiovascular_age)
         SELECT 
             day AS date, 
             vascular_age AS cardiovascular_age
