@@ -1,6 +1,5 @@
 from config.config import CARDIOVASCULAR_AGE_ENDPOINT, OURA_API_TOKEN
 from scripts.utils.api_utils import get_oura_data
-from scripts.utils.csv_utils import save_data_to_csv
 
 import duckdb
 import os
