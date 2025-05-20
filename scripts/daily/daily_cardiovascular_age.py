@@ -8,8 +8,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-pacific = ZoneInfo("America/Los_Angeles")
-
 # Load environment variables
 load_dotenv()
 
@@ -17,7 +15,11 @@ load_dotenv()
 MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
 
 # Set up the date for "yesterday"
-now_pacific = datetime.now(pacific)
+pacific = ZoneInfo("America/Los_Angeles")
+now_utc = datetime.now(tz=ZoneInfo("UTC"))
+
+# Convert to "now" in Pacific Time (based on UTC runtime)
+now_pacific = now_utc.astimezone(pacific)
 yesterday = (now_pacific - timedelta(days=1)).date()
 
 params = {
