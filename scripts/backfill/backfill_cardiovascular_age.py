@@ -15,7 +15,7 @@ MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
 # I need to update these params and remove the variables here.
 params = {
     "start_date": DEFAULT_START_DATE,
-    "end_date": "2025-01-1"
+    "end_date": "2025-05-23"
 }
 
 if __name__ == "__main__":
@@ -39,8 +39,13 @@ if __name__ == "__main__":
     # Insert into MotherDuck
     conn.execute("CREATE OR REPLACE TEMP VIEW cardio_view AS SELECT * FROM df")
     conn.execute("""
-        INSERT INTO daily_cardiovascular_age (date, cardiovascular_age)
-        SELECT day AS date, vascular_age AS cardiovascular_age
+        INSERT OR IGNORE INTO daily_cardiovascular_age (
+                 date, 
+                 cardiovascular_age
+                )
+        SELECT 
+            day AS date, 
+            vascular_age AS cardiovascular_age
         FROM cardio_view
     """)
 
