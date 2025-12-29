@@ -19,7 +19,11 @@ sql_files = [
     "db/setup/create_cardiovascular_age_table.sql",
     "db/setup/create_activity_table.sql",
     "db/setup/create_readiness_table.sql",
-    "db/setup/create_resilience_table.sql"
+    "db/setup/create_resilience_table.sql",
+    "db/setup/create_sleep_table.sql",
+    "db/setup/create_sleep_detail_table.sql",
+    "db/setup/create_stress_table.sql",
+    "db/setup/create_spo2_table.sql",
 ]   
 
 # Execute each SQL file

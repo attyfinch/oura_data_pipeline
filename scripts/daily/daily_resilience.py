@@ -1,10 +1,12 @@
-from config.config import RESILIENCE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, DEFAULT_START_DATE
+from config.config import RESILIENCE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET
 from scripts.utils.api_utils import get_oura_data
 
 import duckdb
 import os
-import pandas as pd
 from dotenv import load_dotenv
+import pandas as pd
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 # Load environment variables
 load_dotenv()
@@ -12,23 +14,28 @@ load_dotenv()
 # Grab the MotherDuck token
 MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
 
-# Set your backfill date range
+# Set up dates - 14 day lookback
+pacific = ZoneInfo("America/Los_Angeles")
+now_pacific = datetime.now(pacific)
+yesterday = (now_pacific - timedelta(days=1)).date()
+fourteen_days_ago = (now_pacific - timedelta(days=14)).date()
+
 params = {
-    "start_date": DEFAULT_START_DATE,
-    "end_date": "2025-12-28"  # Update this to your desired end date
+    "start_date": fourteen_days_ago,
+    "end_date": yesterday
 }
 
 if __name__ == "__main__":
-    print(f"Backfilling resilience data from {params['start_date']} to {params['end_date']}...")
+    print(f"Fetching resilience data from {fourteen_days_ago} to {yesterday}...")
 
     resilience_data = get_oura_data(RESILIENCE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, params)
     df = pd.DataFrame(resilience_data)
 
     if df.empty:
-        print("⚠️ No resilience data found for the specified date range.")
+        print("⚠️ No resilience data available for the specified date range. Skipping.")
         exit(0)
 
-    print(f"Found {len(df)} records:")
+    print("Sample of the data:")
     print(df.head())
 
     # Connect to MotherDuck
@@ -56,6 +63,6 @@ if __name__ == "__main__":
         )
     """)
 
-    print("✅ Successfully backfilled resilience data into MotherDuck!")
+    print("✅ Successfully loaded daily resilience data into MotherDuck!")
 
     conn.close()

@@ -1,31 +1,34 @@
-from config.config import ACTIVITY_ENDPOINT, OURA_API_TOKEN, DEFAULT_START_DATE
+from config.config import ACTIVITY_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, DEFAULT_START_DATE
 from scripts.utils.api_utils import get_oura_data
-from scripts.utils.csv_utils import save_data_to_csv
 
 import duckdb
 import os
+import pandas as pd
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
-# Grab the MotherDuck token (if available)
+# Grab the MotherDuck token
 MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
 
-# I need to update these params and remove the variables here.
+# Set your backfill date range
 params = {
     "start_date": DEFAULT_START_DATE,
-    "end_date": "2025-05-17"
+    "end_date": "2025-12-28"  # Update this to your desired end date
 }
 
 if __name__ == "__main__":
-    print("Fetching cardiovascular age data from Oura...")
+    print(f"Backfilling activity data from {params['start_date']} to {params['end_date']}...")
     
-    activity_data = get_oura_data(ACTIVITY_ENDPOINT, OURA_API_TOKEN, params)
-    
-    df = save_data_to_csv(activity_data, filename="data/activity_backfill.csv")
+    activity_data = get_oura_data(ACTIVITY_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, params)
+    df = pd.DataFrame(activity_data)
 
-    print("Sample of the data:")
+    if df.empty:
+        print("⚠️ No activity data found for the specified date range.")
+        exit(0)
+
+    print(f"Found {len(df)} records:")
     print(df.head())
 
     # Connect to MotherDuck
@@ -36,36 +39,35 @@ if __name__ == "__main__":
 
     print("Loading data into MotherDuck...")
 
-    # # Insert into MotherDuck
     conn.execute("CREATE OR REPLACE TEMP VIEW activity_view AS SELECT * FROM df")
     conn.execute("""
-        INSERT OR IGNORE INTO daily_activity (
-                date,
-                activity_score,
-                active_calories,
-                average_met_minutes,
-                contributors,
-                equivalent_walking_distance,
-                high_activity_met_minutes,
-                high_activity_time,
-                inactivity_alerts,
-                low_activity_met_minutes,
-                low_activity_time,
-                medium_activity_met_minutes,
-                medium_activity_time,
-                meters_to_target,
-                non_wear_time,
-                resting_time,
-                sedentary_met_minutes,
-                sedentary_time,
-                steps,
-                target_calories,
-                target_meters,
-                total_calories
-                )
+        INSERT INTO daily_activity (
+            date,
+            activity_score,
+            active_calories,
+            average_met_minutes,
+            contributors,
+            equivalent_walking_distance,
+            high_activity_met_minutes,
+            high_activity_time,
+            inactivity_alerts,
+            low_activity_met_minutes,
+            low_activity_time,
+            medium_activity_met_minutes,
+            medium_activity_time,
+            meters_to_target,
+            non_wear_time,
+            resting_time,
+            sedentary_met_minutes,
+            sedentary_time,
+            steps,
+            target_calories,
+            target_meters,
+            total_calories
+        )
         SELECT 
-            day AS date, 
-            score AS activity_score,
+            CAST(day AS DATE),
+            score,
             active_calories,
             average_met_minutes,
             contributors,
@@ -87,8 +89,11 @@ if __name__ == "__main__":
             target_meters,
             total_calories
         FROM activity_view
+        WHERE CAST(day AS DATE) NOT IN (
+            SELECT date FROM daily_activity
+        )
     """)
 
-    print("✅ Successfully loaded backfill data into MotherDuck!")
+    print("✅ Successfully backfilled activity data into MotherDuck!")
 
     conn.close()

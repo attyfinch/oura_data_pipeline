@@ -1,4 +1,4 @@
-from config.config import RESILIENCE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, DEFAULT_START_DATE
+from config.config import STRESS_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, DEFAULT_START_DATE
 from scripts.utils.api_utils import get_oura_data
 
 import duckdb
@@ -19,13 +19,13 @@ params = {
 }
 
 if __name__ == "__main__":
-    print(f"Backfilling resilience data from {params['start_date']} to {params['end_date']}...")
+    print(f"Backfilling stress data from {params['start_date']} to {params['end_date']}...")
 
-    resilience_data = get_oura_data(RESILIENCE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, params)
-    df = pd.DataFrame(resilience_data)
+    stress_data = get_oura_data(STRESS_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, params)
+    df = pd.DataFrame(stress_data)
 
     if df.empty:
-        print("⚠️ No resilience data found for the specified date range.")
+        print("⚠️ No stress data found for the specified date range.")
         exit(0)
 
     print(f"Found {len(df)} records:")
@@ -39,23 +39,25 @@ if __name__ == "__main__":
 
     print("Loading data into MotherDuck...")
 
-    conn.execute("CREATE OR REPLACE TEMP VIEW resilience_view AS SELECT * FROM df")
+    conn.execute("CREATE OR REPLACE TEMP VIEW stress_view AS SELECT * FROM df")
     conn.execute("""
-        INSERT INTO daily_resilience (
-            date,
-            contributors,
-            level
+        INSERT INTO daily_stress (
+            day,
+            day_summary,
+            recovery_high,
+            stress_high
         )
         SELECT
             CAST(day AS DATE),
-            contributors,
-            level
-        FROM resilience_view
+            day_summary,
+            recovery_high,
+            stress_high
+        FROM stress_view
         WHERE CAST(day AS DATE) NOT IN (
-            SELECT date FROM daily_resilience
+            SELECT day FROM daily_stress
         )
     """)
 
-    print("✅ Successfully backfilled resilience data into MotherDuck!")
+    print("✅ Successfully backfilled stress data into MotherDuck!")
 
     conn.close()

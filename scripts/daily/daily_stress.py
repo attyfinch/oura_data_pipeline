@@ -1,4 +1,4 @@
-from config.config import READINESS_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET
+from config.config import STRESS_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET
 from scripts.utils.api_utils import get_oura_data
 
 import duckdb
@@ -26,13 +26,13 @@ params = {
 }
 
 if __name__ == "__main__":
-    print(f"Fetching readiness data from {fourteen_days_ago} to {yesterday}...")
+    print(f"Fetching stress data from {fourteen_days_ago} to {yesterday}...")
 
-    readiness_data = get_oura_data(READINESS_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, params)
-    df = pd.DataFrame(readiness_data)
+    stress_data = get_oura_data(STRESS_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, params)
+    df = pd.DataFrame(stress_data)
 
     if df.empty:
-        print("⚠️ No readiness data available for the specified date range. Skipping.")
+        print("⚠️ No stress data available for the specified date range. Skipping.")
         exit(0)
 
     print("Sample of the data:")
@@ -46,27 +46,25 @@ if __name__ == "__main__":
 
     print("Loading data into MotherDuck...")
 
-    conn.execute("CREATE OR REPLACE TEMP VIEW readiness_view AS SELECT * FROM df")
+    conn.execute("CREATE OR REPLACE TEMP VIEW stress_view AS SELECT * FROM df")
     conn.execute("""
-        INSERT INTO daily_readiness (
-            date,
-            readiness_score,
-            temperature_deviation,
-            temperature_trend_deviation,
-            contributors
+        INSERT INTO daily_stress (
+            day,
+            day_summary,
+            recovery_high,
+            stress_high
         )
         SELECT
             CAST(day AS DATE),
-            score,
-            temperature_deviation,
-            temperature_trend_deviation,
-            contributors
-        FROM readiness_view
+            day_summary,
+            recovery_high,
+            stress_high
+        FROM stress_view
         WHERE CAST(day AS DATE) NOT IN (
-            SELECT date FROM daily_readiness
+            SELECT day FROM daily_stress
         )
     """)
 
-    print("✅ Successfully loaded daily readiness data into MotherDuck!")
+    print("✅ Successfully loaded daily stress data into MotherDuck!")
 
     conn.close()

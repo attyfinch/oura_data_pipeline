@@ -1,4 +1,4 @@
 python-dotenv
 requests
 pandas
-duckdb==1.2.2  # Required for MotherDuck compatibility (as of 2025-05-24)
+duckdb==1.4.3  # Required for MotherDuck compatibility (as of 2025-05-24)

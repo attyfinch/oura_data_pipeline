@@ -1,10 +1,9 @@
-from config.config import CARDIOVASCULAR_AGE_ENDPOINT, OURA_API_TOKEN
+from config.config import CARDIOVASCULAR_AGE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET
 from scripts.utils.api_utils import get_oura_data
-
 import duckdb
 import os
-from dotenv import load_dotenv
 import pandas as pd
+from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -20,17 +19,17 @@ now_utc = datetime.now(tz=ZoneInfo("UTC"))
 
 # Convert to "now" in Pacific Time (based on UTC runtime)
 now_pacific = now_utc.astimezone(pacific)
-yesterday = (now_pacific - timedelta(days=1)).date()
+fourteen_days_ago = (now_pacific - timedelta(days=14)).date()
 
 params = {
-    "start_date": yesterday,
-    "end_date": yesterday
+    "start_date": fourteen_days_ago,
+    "end_date": now_pacific
 }
 
-if __name__ == "__main__":
-    print(f"Fetching cardiovascular age data for {yesterday}...")
+if __name__ == "__main__":  
+    print(f"Fetching cardiovascular age data for {fourteen_days_ago}...")
 
-    cardiovascular_age_data = get_oura_data(CARDIOVASCULAR_AGE_ENDPOINT, OURA_API_TOKEN, params)
+    cardiovascular_age_data = get_oura_data(CARDIOVASCULAR_AGE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, params)
     df = pd.DataFrame(cardiovascular_age_data)
 
     print("Sample of the daily cardiovascular age data:")
@@ -52,7 +51,7 @@ if __name__ == "__main__":
             CAST(day AS DATE),
             vascular_age
         FROM cardio_view
-        WHERE CAST(day AS DATE) = DATE '{yesterday}'
+        WHERE CAST(day AS DATE) = DATE '{fourteen_days_ago}'
         AND CAST(day AS DATE) NOT IN (
             SELECT date FROM daily_cardiovascular_age
         )
