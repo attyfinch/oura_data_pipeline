@@ -1,15 +1,51 @@
+import os
 import requests
-import json
 from datetime import datetime, timezone
-from config.config import TOKEN_FILE
+import duckdb
+from dotenv import load_dotenv
+
+load_dotenv()
+
+MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
+DATABASE = "oura"
+
+def get_db_connection():
+    return duckdb.connect(f"md:{DATABASE}?motherduck_token={MOTHERDUCK_TOKEN}")
 
 def load_tokens():
-    with open(TOKEN_FILE) as f:
-        return json.load(f)
+    conn = get_db_connection()
+    result = conn.execute("""
+        SELECT access_token, refresh_token, expires_at 
+        FROM auth_tokens 
+        WHERE service = 'oura'
+    """).fetchone()
+    conn.close()
+    
+    if not result:
+        raise ValueError("No Oura tokens found in database. Run initial token seed first.")
+    
+    return {
+        "access_token": result[0],
+        "refresh_token": result[1],
+        "expires_at": result[2]
+    }
 
 def save_tokens(tokens):
-    with open(TOKEN_FILE, "w") as f:
-        json.dump(tokens, f, indent=4)
+    conn = get_db_connection()
+    conn.execute("""
+        UPDATE auth_tokens 
+        SET access_token = ?,
+            refresh_token = ?,
+            expires_at = ?,
+            updated_at = ?
+        WHERE service = 'oura'
+    """, [
+        tokens["access_token"],
+        tokens["refresh_token"],
+        tokens["expires_at"],
+        datetime.now(timezone.utc).isoformat()
+    ])
+    conn.close()
 
 def is_token_expired(expires_at_str):
     expires_at = datetime.fromisoformat(expires_at_str.replace("Z", "+00:00"))
