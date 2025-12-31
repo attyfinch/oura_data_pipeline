@@ -1,12 +1,5 @@
 import duckdb
-import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-# Grab the MotherDuck token (if available)
-MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
+from config.config import MOTHERDUCK_TOKEN
 
 # Connect depending on whether a token is present
 if MOTHERDUCK_TOKEN:

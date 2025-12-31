@@ -1,20 +1,13 @@
 from config.config import (
-    CARDIOVASCULAR_AGE_ENDPOINT, 
-    OURA_CLIENT_ID, 
-    OURA_CLIENT_SECRET, 
-    DEFAULT_START_DATE
+    CARDIOVASCULAR_AGE_ENDPOINT,
+    OURA_CLIENT_ID,
+    OURA_CLIENT_SECRET,
+    DEFAULT_START_DATE,
+    MOTHERDUCK_TOKEN
 )
 from scripts.utils.api_utils import get_oura_data
 import duckdb
-import os
 import pandas as pd
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-# Grab MotherDuck token
-MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
 
 # Set backfill date range
 params = {

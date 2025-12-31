@@ -1,13 +1,7 @@
-import os
 import requests
 from datetime import datetime, timezone
 import duckdb
-from dotenv import load_dotenv
-
-load_dotenv()
-
-MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
-DATABASE = "oura"
+from config.config import MOTHERDUCK_TOKEN, DATABASE
 
 def get_db_connection():
     return duckdb.connect(f"md:{DATABASE}?motherduck_token={MOTHERDUCK_TOKEN}")

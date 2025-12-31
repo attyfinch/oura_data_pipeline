@@ -1,13 +1,6 @@
 import json
 import duckdb
-import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-# Grab the MotherDuck token
-MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
+from config.config import MOTHERDUCK_TOKEN
 
 
 # Read current tokens from your secrets file

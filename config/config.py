@@ -27,7 +27,9 @@ STRESS_ENDPOINT = f"{OURA_BASE_URL}/daily_stress"
 SPO2_ENDPOINT = f"{OURA_BASE_URL}/daily_spo2"
 
 # Database settings
-# LOCAL_DB_PATH = need to add a database connection here
+MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
+DATABASE = "oura"
+
 TABLE_NAME_CARDIOVASCULAR_AGE = "daily_cardiovascular_age"
 TABLE_NAME_ACTIVITY = "daily_activity"
 TABLE_NAME_READINESS = "daily_readiness"

@@ -1,16 +1,8 @@
-from config.config import SLEEP_DETAIL_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, DEFAULT_START_DATE
+from config.config import SLEEP_DETAIL_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, DEFAULT_START_DATE, MOTHERDUCK_TOKEN
 from scripts.utils.api_utils import get_oura_data
 
 import duckdb
-import os
 import pandas as pd
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-# Grab the MotherDuck token
-MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
 
 # Set your backfill date range
 params = {

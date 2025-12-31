@@ -1,17 +1,9 @@
-from config.config import CARDIOVASCULAR_AGE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET
+from config.config import CARDIOVASCULAR_AGE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, MOTHERDUCK_TOKEN
 from scripts.utils.api_utils import get_oura_data
 import duckdb
-import os
 import pandas as pd
-from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-
-# Load environment variables
-load_dotenv()
-
-# Get MotherDuck token (optional)
-MOTHERDUCK_TOKEN = os.getenv("MOTHERDUCK_TOKEN")
 
 # Set up the date for "yesterday"
 pacific = ZoneInfo("America/Los_Angeles")

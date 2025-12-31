@@ -4,13 +4,11 @@ import webbrowser
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import requests
-from dotenv import load_dotenv
 from datetime import datetime, timezone
+from config.config import OURA_CLIENT_ID, OURA_CLIENT_SECRET
 
-load_dotenv()
-
-CLIENT_ID = os.getenv("OURA_CLIENT_ID")
-CLIENT_SECRET = os.getenv("OURA_CLIENT_SECRET")
+CLIENT_ID = OURA_CLIENT_ID
+CLIENT_SECRET = OURA_CLIENT_SECRET
 REDIRECT_URI = "http://localhost:8000/callback"
 TOKEN_FILE = "secrets/oura_tokens.json"
 
