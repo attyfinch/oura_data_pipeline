@@ -1,8 +1,8 @@
-from config.config import STRESS_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, DEFAULT_START_DATE, MOTHERDUCK_TOKEN
-from scripts.utils.api_utils import get_oura_data
+from config.config import STRESS_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, DEFAULT_START_DATE
+from scripts.utils.api_utils import get_oura_data, get_db_connection, OuraAPIError, TokenError, DatabaseError
 
-import duckdb
 import pandas as pd
+import sys
 
 # Set your backfill date range
 params = {
@@ -13,43 +13,57 @@ params = {
 if __name__ == "__main__":
     print(f"Backfilling stress data from {params['start_date']} to {params['end_date']}...")
 
-    stress_data = get_oura_data(STRESS_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, params)
+    try:
+        stress_data = get_oura_data(STRESS_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, params)
+    except TokenError as e:
+        print(f"❌ Token error: {e}")
+        sys.exit(1)
+    except OuraAPIError as e:
+        print(f"❌ API error: {e}")
+        sys.exit(1)
+    except DatabaseError as e:
+        print(f"❌ Database error: {e}")
+        sys.exit(1)
+
     df = pd.DataFrame(stress_data)
 
     if df.empty:
         print("⚠️ No stress data found for the specified date range.")
-        exit(0)
+        sys.exit(0)
 
     print(f"Found {len(df)} records:")
     print(df.head())
 
-    # Connect to MotherDuck
-    if MOTHERDUCK_TOKEN:
-        conn = duckdb.connect(f"md:oura?motherduck_token={MOTHERDUCK_TOKEN}")
-    else:
-        conn = duckdb.connect("md:oura")
+    try:
+        conn = get_db_connection()
 
-    print("Loading data into MotherDuck...")
+        print("Loading data into MotherDuck...")
 
-    conn.execute("CREATE OR REPLACE TEMP VIEW stress_view AS SELECT * FROM df")
-    conn.execute("""
-        INSERT INTO daily_stress (
-            day,
-            day_summary,
-            recovery_high,
-            stress_high
-        )
-        SELECT
-            CAST(day AS DATE),
-            day_summary,
-            recovery_high,
-            stress_high
-        FROM stress_view
-        WHERE CAST(day AS DATE) NOT IN (
-            SELECT day FROM daily_stress
-        )
-    """)
+        conn.execute("CREATE OR REPLACE TEMP VIEW stress_view AS SELECT * FROM df")
+        conn.execute("""
+            INSERT INTO daily_stress (
+                day,
+                day_summary,
+                recovery_high,
+                stress_high
+            )
+            SELECT
+                CAST(day AS DATE),
+                day_summary,
+                recovery_high,
+                stress_high
+            FROM stress_view
+            WHERE CAST(day AS DATE) NOT IN (
+                SELECT day FROM daily_stress
+            )
+        """)
 
-    print("✅ Successfully backfilled stress data into MotherDuck!")
+        print("✅ Successfully backfilled stress data into MotherDuck!")
+        conn.close()
 
-    conn.close()
+    except DatabaseError as e:
+        print(f"❌ Database error: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+        sys.exit(1)

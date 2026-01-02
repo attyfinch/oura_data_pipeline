@@ -1,9 +1,9 @@
-from config.config import CARDIOVASCULAR_AGE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, MOTHERDUCK_TOKEN
-from scripts.utils.api_utils import get_oura_data
-import duckdb
+from config.config import CARDIOVASCULAR_AGE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET
+from scripts.utils.api_utils import get_oura_data, get_db_connection, OuraAPIError, TokenError, DatabaseError
 import pandas as pd
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+import sys
 
 # Set up the date for "yesterday"
 pacific = ZoneInfo("America/Los_Angeles")
@@ -18,37 +18,50 @@ params = {
     "end_date": now_pacific
 }
 
-if __name__ == "__main__":  
+if __name__ == "__main__":
     print(f"Fetching cardiovascular age data for {fourteen_days_ago}...")
 
-    cardiovascular_age_data = get_oura_data(CARDIOVASCULAR_AGE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, params)
+    try:
+        cardiovascular_age_data = get_oura_data(CARDIOVASCULAR_AGE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, params)
+    except TokenError as e:
+        print(f"❌ Token error: {e}")
+        sys.exit(1)
+    except OuraAPIError as e:
+        print(f"❌ API error: {e}")
+        sys.exit(1)
+    except DatabaseError as e:
+        print(f"❌ Database error: {e}")
+        sys.exit(1)
+
     df = pd.DataFrame(cardiovascular_age_data)
 
     print("Sample of the daily cardiovascular age data:")
     print(df.head())
 
-    # Connect to MotherDuck (oura DB)
-    if MOTHERDUCK_TOKEN:
-        conn = duckdb.connect(f"md:oura?motherduck_token={MOTHERDUCK_TOKEN}")
-    else:
-        conn = duckdb.connect("md:oura")
+    try:
+        conn = get_db_connection()
 
-    print("Loading daily data into MotherDuck...")
+        print("Loading daily data into MotherDuck...")
 
-    # Create temp view and insert into table
-    conn.execute("CREATE OR REPLACE TEMP VIEW cardio_view AS SELECT * FROM df")
-    conn.execute(f"""
-        INSERT INTO daily_cardiovascular_age (date, cardiovascular_age)
-        SELECT
-            CAST(day AS DATE),
-            vascular_age
-        FROM cardio_view
-        WHERE CAST(day AS DATE) = DATE '{fourteen_days_ago}'
-        AND CAST(day AS DATE) NOT IN (
-            SELECT date FROM daily_cardiovascular_age
-        )
-    """)
+        conn.execute("CREATE OR REPLACE TEMP VIEW cardio_view AS SELECT * FROM df")
+        conn.execute(f"""
+            INSERT INTO daily_cardiovascular_age (date, cardiovascular_age)
+            SELECT
+                CAST(day AS DATE),
+                vascular_age
+            FROM cardio_view
+            WHERE CAST(day AS DATE) = DATE '{fourteen_days_ago}'
+            AND CAST(day AS DATE) NOT IN (
+                SELECT date FROM daily_cardiovascular_age
+            )
+        """)
 
-    print("✅ Successfully loaded daily cardiovascular age data into MotherDuck!")
+        print("✅ Successfully loaded daily cardiovascular age data into MotherDuck!")
+        conn.close()
 
-    conn.close()
+    except DatabaseError as e:
+        print(f"❌ Database error: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+        sys.exit(1)
