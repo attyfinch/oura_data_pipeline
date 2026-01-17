@@ -2,12 +2,16 @@ name: Daily Oura Pipeline
 
 on:
   schedule:
-    - cron: "0 18 * * *"   # Runs every day at 11 am Pacific Time (18:00 UTC)
+    - cron: '0 16 * * *'  # 8am Pacific
+    - cron: '0 20 * * *'  # 12pm Pacific
+    - cron: '0 0 * * *'   # 4pm Pacific
+    - cron: '0 4 * * *'   # 8pm Pacific    
   workflow_dispatch: {}     # Allow manual trigger from GitHub UI
 
 jobs:
   run-daily-pipeline:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     
     env:
       OURA_CLIENT_ID: ${{ secrets.OURA_CLIENT_ID }}
@@ -30,24 +34,32 @@ jobs:
 
       - name: Run daily activity
         run: python -m scripts.daily.daily_activity
+        continue-on-error: true
 
       - name: Run daily sleep
         run: python -m scripts.daily.daily_sleep
+        continue-on-error: true
 
       - name: Run daily sleep detail
         run: python -m scripts.daily.daily_sleep_detail
+        continue-on-error: true
 
       - name: Run daily readiness
         run: python -m scripts.daily.daily_readiness
+        continue-on-error: true
 
       - name: Run daily stress
         run: python -m scripts.daily.daily_stress
+        continue-on-error: true
 
       - name: Run daily spo2
         run: python -m scripts.daily.daily_spo2
+        continue-on-error: true
 
       - name: Run daily cardiovascular age
         run: python -m scripts.daily.daily_cardiovascular_age
+        continue-on-error: true
 
       - name: Run daily resilience
         run: python -m scripts.daily.daily_resilience
+        continue-on-error: true
