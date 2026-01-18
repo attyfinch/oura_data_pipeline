@@ -7,7 +7,7 @@ import sys
 # Set your backfill date range
 params = {
     "start_date": DEFAULT_START_DATE,
-    "end_date": "2025-12-28"  # Update this to your desired end date
+    "end_date": "2026-01-18"  # Update this to your desired end date
 }
 
 if __name__ == "__main__":
