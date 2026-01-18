@@ -5,21 +5,19 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 import sys
 
-# Set up the date for "yesterday"
+# Set up dates - 14 day lookback
 pacific = ZoneInfo("America/Los_Angeles")
-now_utc = datetime.now(tz=ZoneInfo("UTC"))
-
-# Convert to "now" in Pacific Time (based on UTC runtime)
-now_pacific = now_utc.astimezone(pacific)
+now_pacific = datetime.now(pacific)
+today = now_pacific.date()
 fourteen_days_ago = (now_pacific - timedelta(days=14)).date()
 
 params = {
     "start_date": fourteen_days_ago,
-    "end_date": now_pacific
+    "end_date": today
 }
 
 if __name__ == "__main__":
-    print(f"Fetching cardiovascular age data for {fourteen_days_ago}...")
+    print(f"Fetching cardiovascular age data from {fourteen_days_ago} to {today}...")
 
     try:
         cardiovascular_age_data = get_oura_data(CARDIOVASCULAR_AGE_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, params)

@@ -9,16 +9,16 @@ import sys
 # Set up dates - 14 day lookback
 pacific = ZoneInfo("America/Los_Angeles")
 now_pacific = datetime.now(pacific)
-yesterday = (now_pacific - timedelta(days=1)).date()
+today = now_pacific.date()
 fourteen_days_ago = (now_pacific - timedelta(days=14)).date()
 
 params = {
     "start_date": fourteen_days_ago,
-    "end_date": yesterday
+    "end_date": today
 }
 
 if __name__ == "__main__":
-    print(f"Fetching readiness data from {fourteen_days_ago} to {yesterday}...")
+    print(f"Fetching readiness data from {fourteen_days_ago} to {today}...")
 
     try:
         readiness_data = get_oura_data(READINESS_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, params)
