@@ -4,7 +4,7 @@ from config.config import (
     OURA_CLIENT_SECRET,
     DEFAULT_START_DATE
 )
-from scripts.utils.api_utils import get_oura_data, get_db_connection, OuraAPIError, TokenError, DatabaseError
+from scripts.utils.api_utils import get_oura_data, get_db_connection, OuraAPIError, TokenError, DatabaseError, print_error_with_full_response
 from datetime import date, timedelta
 import pandas as pd
 import sys
@@ -26,10 +26,10 @@ if __name__ == "__main__":
             params
         )
     except TokenError as e:
-        print(f"❌ Token error: {e}")
+        print_error_with_full_response("Token error", e)
         sys.exit(1)
     except OuraAPIError as e:
-        print(f"❌ API error: {e}")
+        print_error_with_full_response("API error", e)
         sys.exit(1)
     except DatabaseError as e:
         print(f"❌ Database error: {e}")

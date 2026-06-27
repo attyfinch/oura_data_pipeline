@@ -7,21 +7,57 @@ from config.config import MOTHERDUCK_TOKEN, DATABASE
 
 class OuraAPIError(Exception):
     """Custom exception for Oura API errors"""
-    def __init__(self, message, status_code=None, endpoint=None):
+    def __init__(self, message, status_code=None, endpoint=None, response_body=None, response_url=None):
         self.message = message
         self.status_code = status_code
         self.endpoint = endpoint
+        self.response_body = response_body
+        self.response_url = response_url
         super().__init__(self.message)
+
+    def full_response(self):
+        details = []
+        if self.status_code:
+            details.append(f"Status code: {self.status_code}")
+        if self.response_url:
+            details.append(f"URL: {self.response_url}")
+        if self.response_body:
+            details.append(f"Body: {self.response_body}")
+        return "\n".join(details)
 
 
 class TokenError(Exception):
     """Custom exception for token-related errors"""
-    pass
+    def __init__(self, message, status_code=None, endpoint=None, response_body=None, response_url=None):
+        self.message = message
+        self.status_code = status_code
+        self.endpoint = endpoint
+        self.response_body = response_body
+        self.response_url = response_url
+        super().__init__(self.message)
+
+    def full_response(self):
+        details = []
+        if self.status_code:
+            details.append(f"Status code: {self.status_code}")
+        if self.response_url:
+            details.append(f"URL: {self.response_url}")
+        if self.response_body:
+            details.append(f"Body: {self.response_body}")
+        return "\n".join(details)
 
 
 class DatabaseError(Exception):
     """Custom exception for database operations"""
     pass
+
+
+def print_error_with_full_response(error_type, error):
+    print(f"❌ {error_type}: {error}")
+    full_response = error.full_response()
+    if full_response:
+        print("Full error response:")
+        print(full_response)
 
 
 def get_db_connection():
@@ -109,12 +145,32 @@ def refresh_access_token(refresh_token, client_id, client_secret):
         raise OuraAPIError("Could not connect to Oura API for token refresh", endpoint="oauth/token")
     except HTTPError as e:
         status_code = e.response.status_code
+        response_body = e.response.text
+        response_url = e.response.url
         if status_code == 401:
-            raise TokenError("Refresh token is invalid or expired. Re-authorization required.")
+            raise TokenError(
+                "Refresh token is invalid or expired. Re-authorization required.",
+                status_code=status_code,
+                endpoint="oauth/token",
+                response_body=response_body,
+                response_url=response_url
+            )
         elif status_code == 400:
-            raise TokenError(f"Bad token refresh request: {e.response.text}")
+            raise TokenError(
+                f"Bad token refresh request: {response_body}",
+                status_code=status_code,
+                endpoint="oauth/token",
+                response_body=response_body,
+                response_url=response_url
+            )
         else:
-            raise OuraAPIError(f"Token refresh failed: {e.response.text}", status_code=status_code, endpoint="oauth/token")
+            raise OuraAPIError(
+                f"Token refresh failed: {response_body}",
+                status_code=status_code,
+                endpoint="oauth/token",
+                response_body=response_body,
+                response_url=response_url
+            )
     except RequestException as e:
         raise OuraAPIError(f"Token refresh request failed: {e}", endpoint="oauth/token")
 
@@ -152,15 +208,47 @@ def get_oura_data(endpoint, client_id, client_secret, params=None):
         raise OuraAPIError(f"Could not connect to Oura API", endpoint=endpoint)
     except HTTPError as e:
         status_code = e.response.status_code
+        response_body = e.response.text
+        response_url = e.response.url
         if status_code == 401:
-            raise TokenError("Access token rejected. Token may have been revoked.")
+            raise TokenError(
+                "Access token rejected. Token may have been revoked.",
+                status_code=status_code,
+                endpoint=endpoint,
+                response_body=response_body,
+                response_url=response_url
+            )
         elif status_code == 403:
-            raise OuraAPIError("Access forbidden - check API scopes", status_code=403, endpoint=endpoint)
+            raise OuraAPIError(
+                "Access forbidden - check API scopes",
+                status_code=403,
+                endpoint=endpoint,
+                response_body=response_body,
+                response_url=response_url
+            )
         elif status_code == 404:
-            raise OuraAPIError("Endpoint not found", status_code=404, endpoint=endpoint)
+            raise OuraAPIError(
+                "Endpoint not found",
+                status_code=404,
+                endpoint=endpoint,
+                response_body=response_body,
+                response_url=response_url
+            )
         elif status_code == 429:
-            raise OuraAPIError("Rate limited by Oura API", status_code=429, endpoint=endpoint)
+            raise OuraAPIError(
+                "Rate limited by Oura API",
+                status_code=429,
+                endpoint=endpoint,
+                response_body=response_body,
+                response_url=response_url
+            )
         else:
-            raise OuraAPIError(f"API request failed: {e.response.text}", status_code=status_code, endpoint=endpoint)
+            raise OuraAPIError(
+                f"API request failed: {response_body}",
+                status_code=status_code,
+                endpoint=endpoint,
+                response_body=response_body,
+                response_url=response_url
+            )
     except RequestException as e:
         raise OuraAPIError(f"Request failed: {e}", endpoint=endpoint)

@@ -23,7 +23,12 @@ conn.execute("""
 conn.execute("""
     INSERT INTO auth_tokens (service, access_token, refresh_token, expires_at, updated_at)
     VALUES ('oura', ?, ?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT (service) DO UPDATE SET
+        access_token = excluded.access_token,
+        refresh_token = excluded.refresh_token,
+        expires_at = excluded.expires_at,
+        updated_at = excluded.updated_at
 """, [tokens["access_token"], tokens["refresh_token"], tokens["expires_at"]])
 
-print("Token table created and seeded!")
+print("Token table created and tokens upserted!")
 conn.close()
