@@ -1,14 +1,14 @@
 from config.config import ACTIVITY_ENDPOINT, OURA_CLIENT_ID, OURA_CLIENT_SECRET, DEFAULT_START_DATE
 from scripts.utils.api_utils import get_oura_data, get_db_connection, OuraAPIError, TokenError, DatabaseError, print_error_with_full_response
 
-from datetime import date, timedelta
+from datetime import date
 import pandas as pd
 import sys
 
 # Set your backfill date range
 params = {
     "start_date": DEFAULT_START_DATE,
-    "end_date": (date.today() - timedelta(days=1)).isoformat()
+    "end_date": date.today().isoformat()
 }
 
 if __name__ == "__main__":

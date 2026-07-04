@@ -13,8 +13,8 @@ today = now_pacific.date()
 fourteen_days_ago = (now_pacific - timedelta(days=14)).date()
 
 params = {
-    "start_date": fourteen_days_ago,
-    "end_date": today
+    "start_date": fourteen_days_ago.isoformat(),
+    "end_date": today.isoformat()
 }
 
 if __name__ == "__main__":
